@@ -1,0 +1,92 @@
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+FILE *yyin;
+int nrlinie = 1;
+int paranteze_deschise = 0;
+int acolade_deschise = 0;
+%}
+
+digit [0-9]
+letter [a-zA-Z_]
+id {letter}({letter}|{digit})*
+
+%%
+
+"print" { printf("CuvantCheie: print, linie: %d\n", nrlinie);}
+"if" { printf("CuvantCheie: if, linie: %d\n", nrlinie);}
+"else" { printf("CuvantCheie: else, linie: %d\n", nrlinie);}
+"def" { printf("CuvantCheie: def, linie: %d\n", nrlinie);}
+"class" { printf("CuvantCheie: class, linie: %d\n", nrlinie);}
+"return" { printf("CuvantCheie: return, linie: %d\n", nrlinie);}
+"for" { printf("CuvantCheie: for, linie: %d\n", nrlinie);}
+"in" { printf("CuvantCheie: in, linie: %d\n", nrlinie);}
+"True" { printf("CuvantCheie: True, linie: %d\n", nrlinie);}
+"False" { printf("CuvantCheie: False, linie: %d\n", nrlinie);}
+"None" { printf("CuvantCheie: None, linie: %d\n", nrlinie);}
+
+{digit}+(\.{digit}+)? { printf("Number: %s, linie: %d\n", yytext, nrlinie);}
+{id} { printf("Identificator: %s, linie: %d\n", yytext, nrlinie);}
+"+" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"-" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"*" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"/" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"=" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"==" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"!=" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"<" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"<=" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+">" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+">=" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+
+"(" { paranteze_deschise++; printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+")" { paranteze_deschise--; printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"{" { acolade_deschise++; printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"}" { acolade_deschise--; printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"[" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"]" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"," { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+"." { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+":" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+";" { printf("Opp: %s, linie: %d\n", yytext, nrlinie);}
+
+\"(\\.|[^"\\])*\" { printf("Sir: %s, linie: %d\n", yytext, nrlinie);}
+\'(\\.|[^'\\])*\' { printf("Sir: %s, linie: %d\n", yytext, nrlinie);}
+\"\"\"(.|\\n)*?\"\"\" { printf("Comentariu pe mai multe linii %s, linie: %d\n", yytext, nrlinie);}
+"#"[^\\n]* {  }
+
+[ \t]+  { }
+\n      { nrlinie++; }
+
+. { printf("Eroare: Caracterul nu se potriveste '%s' pe linie: %d\n", yytext, nrlinie);}
+
+%%
+
+int yywrap() {
+    if (paranteze_deschise != 0) {
+        printf("Eroare: Paranteze neînchise!\n");
+        return 1;
+    }
+    if (acolade_deschise != 0) {
+        printf("Eroare: Acolade neînchise!\n");
+        return 1;
+    }
+    return 1;
+}
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        FILE *fis = fopen(argv[1], "r");
+        if (!fis) {
+            perror("Nu am putut deschide fisierul");
+            return 1;
+        }
+        yyin = fis;
+    } else {
+        yyin = stdin;
+    }
+    yylex();
+    return 0;
+}
